@@ -107,18 +107,7 @@ impl From<&str> for Rule {
 }
 
 fn parse(line: &str) -> Rule {
-    // let fields: Vec<&str> = line
-    //     .split(['[', ']', ','].as_ref())
-    //     .filter(|f| !f.is_empty())
-    //     .map(|f| f.trim())
-    //     .collect();
-
     Rule::from(line)
-    // // File or directory path pattern.
-    // let path_pat = fields.last().unwrap().trim();
-    // Rule {
-    //     path: path_pat.to_string(),
-    // }
 }
 
 // Returns a vector of filter rules read from the file.
