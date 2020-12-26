@@ -21,19 +21,24 @@ fn main() {
         .version(built_info::PKG_VERSION)
         .author("Balakrishnan Chandrasekaran <balakrishnan.c@gmail.com>")
         .about("Utility for editing Tresorit's roaming filter")
-        .arg(Arg::with_name(args::FILTER)
-             .short("f")
-             .long("filter")
-             .help("Absolute/relative path of a roaming filter")
-             .default_value(def::FILTER_REL_PATH))
-        .subcommand(SubCommand::with_name(subcmds::SHOW)
-                    .about("Show roaming filter"))
+        .arg(
+            Arg::with_name(args::FILTER)
+                .short("f")
+                .long("filter")
+                .help("Absolute/relative path of a roaming filter")
+                .default_value(def::FILTER_REL_PATH),
+        )
+        .subcommand(SubCommand::with_name(subcmds::SHOW).about("Show roaming filter"))
         .get_matches();
 
     if let Some(_cmd_input) = matches.subcommand_matches(subcmds::SHOW) {
         match filter::read_rules(matches.value_of(args::FILTER).unwrap()) {
-            Ok(s) => println!("{}", s),
-            Err(e) => panic!("Error: {}", e)
+            Ok(lines) => {
+                for line in lines {
+                    println!("[{:?}] {}", line.action, line.path)
+                }
+            }
+            Err(e) => eprintln!("Error: {}", e),
         }
     }
 }
