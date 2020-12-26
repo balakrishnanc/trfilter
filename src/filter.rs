@@ -9,7 +9,7 @@ pub mod defaults {
 }
 
 
-pub fn read_rules(filename: String) -> Result<String, FileNotFoundError>{
+pub fn read_rules(filename: &str) -> Result<String, FileNotFoundError>{
     if !Path::new(&filename).exists() {
         return Err(FileNotFoundError);
     }

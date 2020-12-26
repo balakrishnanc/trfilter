@@ -1,4 +1,4 @@
-use clap::{App, SubCommand};
+use clap::{App, Arg, SubCommand};
 
 extern crate trfilter;
 use trfilter::filter;
@@ -8,26 +8,32 @@ pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
 
-mod subcommands {
+mod subcmds {
     pub const SHOW: &str = "show";
 }
 
-fn main() {
-    use self::subcommands::*;
+mod args {
+    pub const FILTER: &str = "filter";
+}
 
-    let _matches = App::new(built_info::PKG_NAME)
+fn main() {
+    let matches = App::new(built_info::PKG_NAME)
         .version(built_info::PKG_VERSION)
         .author("Balakrishnan Chandrasekaran <balakrishnan.c@gmail.com>")
         .about("Utility for editing Tresorit's roaming filter")
-        .subcommand(SubCommand::with_name(SHOW)
-                    .about("Show roaming filter")
-                    )
+        .arg(Arg::with_name(args::FILTER)
+             .short("f")
+             .long("filter")
+             .help("Absolute/relative path of a roaming filter")
+             .default_value(def::FILTER_REL_PATH))
+        .subcommand(SubCommand::with_name(subcmds::SHOW)
+                    .about("Show roaming filter"))
         .get_matches();
 
-    if let Some(_matches) = _matches.subcommand_matches(SHOW) {
-        match filter::read_rules(def::FILTER_REL_PATH.to_string()) {
+    if let Some(_cmd_input) = matches.subcommand_matches(subcmds::SHOW) {
+        match filter::read_rules(matches.value_of(args::FILTER).unwrap()) {
             Ok(s) => println!("{}", s),
-            Err(e) => eprintln!("Error: {}", e)
+            Err(e) => panic!("Error: {}", e)
         }
     }
 }
