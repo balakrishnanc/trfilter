@@ -1,20 +1,11 @@
+use super::util;
 use regex::Regex;
-use std::fs::File;
-use std::io::{self, BufRead};
+use std::io;
 use std::path::Path;
 
 pub mod defaults {
     // Default `roaming filter` path (relative to current directory).
     pub const FILTER_REL_PATH: &str = ".tresorit/Filters/roaming.filter";
-}
-
-// Returns an Iterator to the Reader of the lines of the file.
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }
 
 #[derive(Debug)]
@@ -112,7 +103,7 @@ fn parse(line: &str) -> Rule {
 
 // Returns a vector of filter rules read from the file.
 pub fn read_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
-    match read_lines(filename) {
+    match util::read_lines(filename) {
         Ok(lines) => Ok(lines.map(|line| parse(&line.unwrap())).collect()),
         Err(e) => Err(e),
     }
