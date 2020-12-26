@@ -1,7 +1,8 @@
 use clap::{App, SubCommand};
 
 extern crate trfilter;
-use trfilter::core;
+use trfilter::filter;
+use trfilter::filter::defaults as def;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
@@ -11,14 +12,8 @@ mod subcommands {
     pub const SHOW: &str = "show";
 }
 
-mod defaults {
-    pub const ROAMING_FILTER_PATH: &str = ".tresorit/Filters/roaming.filter";
-}
-
-
 fn main() {
     use self::subcommands::*;
-    use self::defaults::*;
 
     let _matches = App::new(built_info::PKG_NAME)
         .version(built_info::PKG_VERSION)
@@ -30,6 +25,9 @@ fn main() {
         .get_matches();
 
     if let Some(_matches) = _matches.subcommand_matches(SHOW) {
-        core::read_rules(ROAMING_FILTER_PATH.to_string());
+        match filter::read_rules(def::FILTER_REL_PATH.to_string()) {
+            Ok(s) => println!("{}", s),
+            Err(e) => eprintln!("Error: {}", e)
+        }
     }
 }
