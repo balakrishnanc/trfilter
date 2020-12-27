@@ -13,7 +13,7 @@ impl From<&str> for Action {
             "Sync" => Action::Sync,
             "Ignore" => Action::Ignore,
             "Junk" => Action::Junk,
-            _ => Action::Sync,
+            _ => panic!("Malformed `Sync` option: {}", s),
         }
     }
 }
@@ -45,7 +45,7 @@ impl From<&str> for Timestamp {
         match s {
             "Remote" => Timestamp::Remote,
             "Local" => Timestamp::Local,
-            _ => Timestamp::Remote,
+            _ => panic!("Malformed `Date` option: {}", s),
         }
     }
 }
@@ -77,7 +77,7 @@ impl From<&str> for ThreadType {
         match s {
             "Normal" => ThreadType::Norm,
             "Priority" => ThreadType::High,
-            _ => ThreadType::Norm,
+            _ => panic!("Malformed `Thread` option: {}", s),
         }
     }
 }
