@@ -98,8 +98,22 @@ impl From<&mut Vec<&str>> for ThreadType {
     }
 }
 
-fn parse_prio_from(text: &str) -> u32 {
-    text.parse::<u32>().map_or(3, |v| v)
+fn parse_prio_from(attrs: &mut Vec<&str>) -> u32 {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"^(?:Priority=)(\d+)$").unwrap();
+    }
+
+    if let Some(i) = attrs.iter().position(|x| RE.is_match(x)) {
+        let attr = attrs.remove(i);
+        RE.captures(attr)
+            .unwrap()
+            .get(1)
+            .map_or("", |v| v.as_str())
+            .parse::<u32>()
+            .unwrap()
+    } else {
+        3
+    }
 }
 
 #[derive(Debug)]
@@ -191,7 +205,7 @@ impl From<&str> for Rule {
         let act: Action = Action::from(&mut attrs);
         let ts: Timestamp = Timestamp::from(&mut attrs);
         let thr: ThreadType = ThreadType::from(&mut attrs);
-        let prio: u32 = parse_prio_from(attrs.get(0).unwrap_or(&""));
+        let prio: u32 = parse_prio_from(&mut attrs);
         let pathtype: Pathtype = Pathtype::from(&mut attrs);
         let case_sens: bool = parse_case_sens_from(&mut attrs);
 
