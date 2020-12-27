@@ -72,11 +72,37 @@ pub enum ThreadType {
     High,
 }
 
+impl From<&str> for ThreadType {
+    fn from(s: &str) -> ThreadType {
+        match s {
+            "Normal" => ThreadType::Norm,
+            "Priority" => ThreadType::High,
+            _ => ThreadType::Norm,
+        }
+    }
+}
+
+impl From<&mut Vec<&str>> for ThreadType {
+    fn from(attrs: &mut Vec<&str>) -> ThreadType {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(?:Thread=)(Normal|Priority)$").unwrap();
+        }
+
+        if let Some(i) = attrs.iter().position(|x| RE.is_match(x)) {
+            let attr = attrs.remove(i);
+            let cap = RE.captures(attr).unwrap();
+            ThreadType::from(cap.get(1).map_or("", |v| v.as_str()))
+        } else {
+            ThreadType::Norm
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Rule {
     pub action: Action,
     pub ts: Timestamp,
-    // pub thr: ThreadType,
+    pub thr: ThreadType,
     // pub prio: u32,
     pub path: String,
 }
@@ -103,9 +129,11 @@ impl From<&str> for Rule {
         let mut attrs: Vec<&str> = attrval.split(',').map(|v| v.trim()).collect();
         let act: Action = Action::from(&mut attrs);
         let ts: Timestamp = Timestamp::from(&mut attrs);
+        let thr: ThreadType = ThreadType::from(&mut attrs);
         Rule {
             action: act,
             ts: ts,
+            thr: thr,
             path: path.to_string(),
         }
     }
