@@ -108,7 +108,7 @@ impl From<&mut Vec<&str>> for ThreadType {
 // synchronization tasks.
 fn parse_prio_from(attrs: &mut Vec<&str>) -> u32 {
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"^(?:Priority=)(\d+)$").unwrap();
+        static ref RE: Regex = Regex::new(r"^(?:Priority=)([1-5])$").unwrap();
     }
 
     if let Some(i) = attrs.iter().position(|x| RE.is_match(x)) {
