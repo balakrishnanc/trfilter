@@ -137,6 +137,24 @@ impl From<&mut Vec<&str>> for Pathtype {
     }
 }
 
+fn parse_case_sens_from(attrs: &mut Vec<&str>) -> bool {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"^(?:CaseSensitive=)?(False|True)$").unwrap();
+    }
+
+    if let Some(i) = attrs.iter().position(|x| RE.is_match(x)) {
+        let attr = attrs.remove(i);
+        RE.captures(attr)
+            .unwrap()
+            .get(1)
+            .map_or("", |v| v.as_str())
+            .parse::<bool>()
+            .unwrap()
+    } else {
+        false
+    }
+}
+
 #[derive(Debug)]
 pub struct Rule {
     pub action: Action,
@@ -144,6 +162,7 @@ pub struct Rule {
     pub thr: ThreadType,
     pub prio: u32,
     pub pathtype: Pathtype,
+    pub case_sens: bool,
     pub path: String,
 }
 
@@ -174,6 +193,7 @@ impl From<&str> for Rule {
         let thr: ThreadType = ThreadType::from(&mut attrs);
         let prio: u32 = parse_prio_from(attrs.get(0).unwrap_or(&""));
         let pathtype: Pathtype = Pathtype::from(&mut attrs);
+        let case_sens: bool = parse_case_sens_from(&mut attrs);
 
         // `attrs` should be empty by now.
         if !attrs.is_empty() {
@@ -186,6 +206,7 @@ impl From<&str> for Rule {
             thr: thr,
             prio: prio,
             pathtype: pathtype,
+            case_sens: case_sens,
             path: path.to_string(),
         }
     }
