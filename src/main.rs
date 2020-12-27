@@ -1,8 +1,6 @@
 use clap::{App, Arg, SubCommand};
 
-extern crate trfilter;
-use trfilter::filter;
-use trfilter::filter::defaults as def;
+use trfilter::filter::{self, defaults as def};
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
