@@ -31,9 +31,9 @@ fn main() {
 
     if let Some(_cmd_input) = matches.subcommand_matches(subcmds::SHOW) {
         match filter::read_rules(matches.value_of(args::FILTER).unwrap()) {
-            Ok(lines) => {
-                for line in lines {
-                    println!("[{:?}] {}", line.action, line.path)
+            Ok(rules) => {
+                for rule in rules {
+                    println!("{:?}", rule)
                 }
             }
             Err(e) => eprintln!("Error: {}", e),
