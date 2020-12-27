@@ -103,8 +103,12 @@ pub struct Rule {
     pub action: Action,
     pub ts: Timestamp,
     pub thr: ThreadType,
-    // pub prio: u32,
+    pub prio: u32,
     pub path: String,
+}
+
+fn parsePrioFrom(text: &str) -> u32 {
+    text.parse::<u32>().map_or(3, |v| v)
 }
 
 // Retrieve filter rule’s attributes and the path pattern.
@@ -127,13 +131,23 @@ impl From<&str> for Rule {
     fn from(text: &str) -> Self {
         let (attrval, path) = get_attrs_and_path(text);
         let mut attrs: Vec<&str> = attrval.split(',').map(|v| v.trim()).collect();
+
+        // Extract the different attributes.
         let act: Action = Action::from(&mut attrs);
         let ts: Timestamp = Timestamp::from(&mut attrs);
         let thr: ThreadType = ThreadType::from(&mut attrs);
+        let prio: u32 = parsePrioFrom(attrs.get(0).unwrap_or(&""));
+
+        // `attrs` should be empty by now.
+        if !attrs.is_empty() {
+            panic!("Malformed attribute values: {}", attrval);
+        }
+
         Rule {
             action: act,
             ts: ts,
             thr: thr,
+            prio: prio,
             path: path.to_string(),
         }
     }
