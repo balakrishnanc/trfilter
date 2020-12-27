@@ -98,6 +98,10 @@ impl From<&mut Vec<&str>> for ThreadType {
     }
 }
 
+fn parse_prio_from(text: &str) -> u32 {
+    text.parse::<u32>().map_or(3, |v| v)
+}
+
 #[derive(Debug)]
 pub enum Pathtype {
     File,
@@ -143,10 +147,6 @@ pub struct Rule {
     pub path: String,
 }
 
-fn parsePrioFrom(text: &str) -> u32 {
-    text.parse::<u32>().map_or(3, |v| v)
-}
-
 // Retrieve filter rule’s attributes and the path pattern.
 fn get_attrs_and_path(rule: &str) -> (&str, &str) {
     lazy_static! {
@@ -172,7 +172,7 @@ impl From<&str> for Rule {
         let act: Action = Action::from(&mut attrs);
         let ts: Timestamp = Timestamp::from(&mut attrs);
         let thr: ThreadType = ThreadType::from(&mut attrs);
-        let prio: u32 = parsePrioFrom(attrs.get(0).unwrap_or(&""));
+        let prio: u32 = parse_prio_from(attrs.get(0).unwrap_or(&""));
         let pathtype: Pathtype = Pathtype::from(&mut attrs);
 
         // `attrs` should be empty by now.
