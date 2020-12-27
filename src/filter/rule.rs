@@ -99,11 +99,47 @@ impl From<&mut Vec<&str>> for ThreadType {
 }
 
 #[derive(Debug)]
+pub enum Pathtype {
+    File,
+    Dir,
+    All,
+}
+
+impl From<&str> for Pathtype {
+    fn from(s: &str) -> Pathtype {
+        match s {
+            "File" => Pathtype::File,
+            "Directory" => Pathtype::Dir,
+            "Unspecified" => Pathtype::All,
+            _ => panic!("Malformed `PathType` option: {}", s),
+        }
+    }
+}
+
+impl From<&mut Vec<&str>> for Pathtype {
+    fn from(attrs: &mut Vec<&str>) -> Pathtype {
+        lazy_static! {
+            static ref RE: Regex =
+                Regex::new(r"^(?:PathType=)?(File|Directory|Unspecified)$").unwrap();
+        }
+
+        if let Some(i) = attrs.iter().position(|x| RE.is_match(x)) {
+            let attr = attrs.remove(i);
+            let cap = RE.captures(attr).unwrap();
+            Pathtype::from(cap.get(1).map_or("", |v| v.as_str()))
+        } else {
+            Pathtype::All
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Rule {
     pub action: Action,
     pub ts: Timestamp,
     pub thr: ThreadType,
     pub prio: u32,
+    pub pathtype: Pathtype,
     pub path: String,
 }
 
@@ -137,6 +173,7 @@ impl From<&str> for Rule {
         let ts: Timestamp = Timestamp::from(&mut attrs);
         let thr: ThreadType = ThreadType::from(&mut attrs);
         let prio: u32 = parsePrioFrom(attrs.get(0).unwrap_or(&""));
+        let pathtype: Pathtype = Pathtype::from(&mut attrs);
 
         // `attrs` should be empty by now.
         if !attrs.is_empty() {
@@ -148,6 +185,7 @@ impl From<&str> for Rule {
             ts: ts,
             thr: thr,
             prio: prio,
+            pathtype: pathtype,
             path: path.to_string(),
         }
     }
