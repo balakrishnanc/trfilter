@@ -41,8 +41,28 @@ pub enum Timestamp {
 }
 
 impl From<&str> for Timestamp {
-    fn from(_text: &str) -> Timestamp {
-        Timestamp::Remote
+    fn from(s: &str) -> Timestamp {
+        match s {
+            "Remote" => Timestamp::Remote,
+            "Local" => Timestamp::Local,
+            _ => Timestamp::Remote,
+        }
+    }
+}
+
+impl From<&mut Vec<&str>> for Timestamp {
+    fn from(attrs: &mut Vec<&str>) -> Timestamp {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^(?:Date=)(Remote|Local)$").unwrap();
+        }
+
+        if let Some(i) = attrs.iter().position(|x| RE.is_match(x)) {
+            let attr = attrs.remove(i);
+            let cap = RE.captures(attr).unwrap();
+            Timestamp::from(cap.get(1).map_or("", |v| v.as_str()))
+        } else {
+            Timestamp::Remote
+        }
     }
 }
 
@@ -55,7 +75,7 @@ pub enum ThreadType {
 #[derive(Debug)]
 pub struct Rule {
     pub action: Action,
-    // pub ts: Timestamp,
+    pub ts: Timestamp,
     // pub thr: ThreadType,
     // pub prio: u32,
     pub path: String,
@@ -82,8 +102,10 @@ impl From<&str> for Rule {
         let (attrval, path) = get_attrs_and_path(text);
         let mut attrs: Vec<&str> = attrval.split(',').map(|v| v.trim()).collect();
         let act: Action = Action::from(&mut attrs);
+        let ts: Timestamp = Timestamp::from(&mut attrs);
         Rule {
             action: act,
+            ts: ts,
             path: path.to_string(),
         }
     }
