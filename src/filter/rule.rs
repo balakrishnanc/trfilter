@@ -1,6 +1,8 @@
 use regex::Regex;
 
 #[derive(Debug)]
+// Represents the `Sync` attribute, which specifies whether to synchronize,
+// ignore, or delete the items matched by the rule.
 pub enum Action {
     Sync,
     Ignore,
@@ -29,12 +31,14 @@ impl From<&mut Vec<&str>> for Action {
             let cap = RE.captures(attr).unwrap();
             Action::from(cap.get(1).map_or("", |v| v.as_str()))
         } else {
-            Action::Sync
+            Action::Sync // Default value for `Sync`
         }
     }
 }
 
 #[derive(Debug)]
+// Represents the `Date` attribute, which speicifies the timestamp to use for a
+// synced file.
 pub enum Timestamp {
     Remote,
     Local,
@@ -61,12 +65,14 @@ impl From<&mut Vec<&str>> for Timestamp {
             let cap = RE.captures(attr).unwrap();
             Timestamp::from(cap.get(1).map_or("", |v| v.as_str()))
         } else {
-            Timestamp::Remote
+            Timestamp::Remote // Default value for `Date`
         }
     }
 }
 
 #[derive(Debug)]
+// Represents the `Threading` attribute, which specifies the thread categories
+// for syncing.
 pub enum ThreadType {
     Norm,
     High,
@@ -93,11 +99,13 @@ impl From<&mut Vec<&str>> for ThreadType {
             let cap = RE.captures(attr).unwrap();
             ThreadType::from(cap.get(1).map_or("", |v| v.as_str()))
         } else {
-            ThreadType::Norm
+            ThreadType::Norm // Default value for `Threading`
         }
     }
 }
 
+// Parses the `Priority` attribute value, which specifies the priority for the
+// synchronization tasks.
 fn parse_prio_from(attrs: &mut Vec<&str>) -> u32 {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"^(?:Priority=)(\d+)$").unwrap();
@@ -112,11 +120,13 @@ fn parse_prio_from(attrs: &mut Vec<&str>) -> u32 {
             .parse::<u32>()
             .unwrap()
     } else {
-        3
+        3 // Default value for `Priority`
     }
 }
 
 #[derive(Debug)]
+// Represents the `PathType` attribute which specifies the scope of the filter
+// rule (i.e., which directories or files the concerned rule applies to).
 pub enum Pathtype {
     File,
     Dir,
@@ -146,7 +156,7 @@ impl From<&mut Vec<&str>> for Pathtype {
             let cap = RE.captures(attr).unwrap();
             Pathtype::from(cap.get(1).map_or("", |v| v.as_str()))
         } else {
-            Pathtype::All
+            Pathtype::All // Default value for `PathType`
         }
     }
 }
@@ -165,7 +175,7 @@ fn parse_case_sens_from(attrs: &mut Vec<&str>) -> bool {
             .parse::<bool>()
             .unwrap()
     } else {
-        false
+        false // Default value for `CaseSensitive`
     }
 }
 
