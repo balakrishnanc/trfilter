@@ -8,6 +8,7 @@ pub mod built_info {
 
 mod subcmds {
     pub const SHOW: &str = "show";
+    pub const CHECK: &str = "check";
 }
 
 mod args {
@@ -16,6 +17,18 @@ mod args {
 
 // Show the rules read listed in the roaming filter file.
 fn cmd_show(filter_file: &str) {
+    match filter::list_rules(filter_file) {
+        Ok(rules) => {
+            for (pos, rule) in rules.iter().enumerate() {
+                println!("» {:>3} {}", pos + 1, rule)
+            }
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+}
+
+// Check the rules read specified in the roaming filter file.
+fn cmd_check(filter_file: &str) {
     match filter::list_rules(filter_file) {
         Ok(rules) => {
             for (pos, rule) in rules.iter().enumerate() {
@@ -39,11 +52,14 @@ fn main() {
                 .default_value(def::FILTER_REL_PATH),
         )
         .subcommand(SubCommand::with_name(subcmds::SHOW).about("Show roaming filter"))
+        .subcommand(SubCommand::with_name(subcmds::CHECK).about("Check roaming filter"))
         .get_matches();
 
     let filter_file: &str = cli_opts.value_of(args::FILTER).unwrap();
 
     if let Some(_cmd_input) = cli_opts.subcommand_matches(subcmds::SHOW) {
         cmd_show(filter_file);
+    } else if let Some(_cmd_input) = cli_opts.subcommand_matches(subcmds::CHECK) {
+        cmd_check(filter_file);
     }
 }
