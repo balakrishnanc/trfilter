@@ -14,8 +14,20 @@ mod args {
     pub const FILTER: &str = "filter";
 }
 
+// Show the rules read listed in the roaming filter file.
+fn cmd_show(filter_file: &str) {
+    match filter::list_rules(filter_file) {
+        Ok(rules) => {
+            for (pos, rule) in rules.iter().enumerate() {
+                println!("» {:>3} {}", pos + 1, rule)
+            }
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+}
+
 fn main() {
-    let matches = App::new(built_info::PKG_NAME)
+    let cli_opts = App::new(built_info::PKG_NAME)
         .version(built_info::PKG_VERSION)
         .author("Balakrishnan Chandrasekaran <balakrishnan.c@gmail.com>")
         .about("Utility for editing Tresorit's roaming filter")
@@ -29,14 +41,9 @@ fn main() {
         .subcommand(SubCommand::with_name(subcmds::SHOW).about("Show roaming filter"))
         .get_matches();
 
-    if let Some(_cmd_input) = matches.subcommand_matches(subcmds::SHOW) {
-        match filter::read_rules(matches.value_of(args::FILTER).unwrap()) {
-            Ok(rules) => {
-                for rule in rules {
-                    println!("{:?}", rule)
-                }
-            }
-            Err(e) => eprintln!("Error: {}", e),
-        }
+    let filter_file: &str = cli_opts.value_of(args::FILTER).unwrap();
+
+    if let Some(_cmd_input) = cli_opts.subcommand_matches(subcmds::SHOW) {
+        cmd_show(filter_file);
     }
 }
