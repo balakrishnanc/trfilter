@@ -199,8 +199,8 @@ fn get_attrs_and_path(rule: &str) -> (&str, &str) {
     match RE.captures(rule) {
         Some(caps) => {
             return (
-                caps.get(1).map_or("", |v| v.as_str()),
-                caps.get(2).map_or("", |v| v.as_str()),
+                caps.get(1).map_or("", |v| v.as_str().trim()),
+                caps.get(2).map_or("", |v| v.as_str().trim()),
             )
         }
         None => panic!("Malfolrmed filter rule: {}", rule),
