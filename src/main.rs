@@ -27,8 +27,18 @@ fn main() {
                 .help("Absolute/relative path of a roaming filter")
                 .default_value(def::FILTER_REL_PATH),
         )
-        .subcommand(SubCommand::with_name(cli::subcmds::SHOW).about("Show roaming filter"))
-        .subcommand(SubCommand::with_name(cli::subcmds::CHECK).about("Check roaming filter"))
+        .subcommand(
+            SubCommand::with_name(cli::subcmds::SHOW)
+                .about("Show rules specified in the roaming filter"),
+        )
+        .subcommand(
+            SubCommand::with_name(cli::subcmds::CHECK)
+                .about("Check rules in the roaming filter file"),
+        )
+        .subcommand(
+            SubCommand::with_name(cli::subcmds::SUGGEST)
+                .about("Suggest rules for adding to the roaming filter"),
+        )
         .get_matches();
 
     let filter_file: &str = cli_opts.value_of(cli::args::FILTER).unwrap();
@@ -37,6 +47,8 @@ fn main() {
         cli::cmd_show(filter_file);
     } else if let Some(_cmd_input) = cli_opts.subcommand_matches(cli::subcmds::CHECK) {
         cli::cmd_check(filter_file);
+    } else if let Some(_cmd_input) = cli_opts.subcommand_matches(cli::subcmds::SUGGEST) {
+        cli::cmd_suggest(filter_file);
     } else {
         eprintln!("{}", cli_opts.usage());
         exit(1);

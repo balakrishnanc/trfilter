@@ -4,6 +4,7 @@ use ansi_term::Colour as Color;
 pub mod subcmds {
     pub const SHOW: &str = "show";
     pub const CHECK: &str = "check";
+    pub const SUGGEST: &str = "suggest";
 }
 
 pub mod args {
@@ -39,4 +40,9 @@ pub fn cmd_check(filter_file: &str) {
         }
         Err(e) => eprintln!("Error: {}", e),
     }
+}
+
+// Suggest new rules, which can be added to the roaming filter file.
+pub fn cmd_suggest(_filter_file: &str) {
+    eprintln!("Functionality not been implemented yet!");
 }
