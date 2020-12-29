@@ -1,16 +1,17 @@
 pub mod checker;
 pub mod globber;
 pub mod rule;
+mod scanner;
 
 use crate::ext::util;
 use globber::*;
 
 use globset::Glob;
-use rule::{Action, Pathtype, Rule};
+use rule::Rule;
 use std::collections::HashSet;
 use std::io::{self, Error, ErrorKind};
 use std::iter::FromIterator;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub mod defaults {
     // Default `roaming filter` path (relative to current directory).
@@ -52,26 +53,6 @@ fn mk_rules(filename: impl AsRef<Path>) -> Result<Vec<Rule>, Error> {
     }
 }
 
-const GIT_DIR: &str = ".git";
-
-// Check if the target path contains a git repository.
-pub fn scan_for_git(wd: &Path) -> Vec<Rule> {
-    let mut path_buf: PathBuf = PathBuf::new();
-    // Construct `git` path relative to given path.PathBuf
-    path_buf.push(wd);
-    path_buf.push(GIT_DIR);
-    let git_path: PathBuf = path_buf.iter().collect::<PathBuf>();
-    let mut rules: Vec<Rule> = vec![];
-    if git_path.exists() {
-        rules.push(rule::mk_simple_rule(
-            Action::Ignore,
-            Pathtype::Dir,
-            git_path.as_path(),
-        ));
-    }
-    rules
-}
-
 // Checks for possible updates to filter rules.
 pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
     let wd: &Path = Path::new(".");
@@ -85,7 +66,7 @@ pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
             .map(|r| create_glob(&r.path.as_path()).expect("Failed to parse rule")),
     );
     // Scan for `git` repository and related artifacts.
-    'gitrules: for rule in scan_for_git(wd) {
+    'gitrules: for rule in scanner::scan_for_git(wd) {
         let glob: Glob = create_glob(&rule.path.as_path())
             .expect("Failed while transforming a rule into a glob");
         // Do not add duplicates!
