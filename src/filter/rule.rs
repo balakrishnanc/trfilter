@@ -232,7 +232,7 @@ impl From<&str> for Rule {
             prio: prio,
             path_type: path_type,
             case_sens: case_sens,
-            path: Path::new(&path.to_string()).to_path_buf(),
+            path: Path::new(path).to_path_buf(),
         }
     }
 }
