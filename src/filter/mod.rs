@@ -86,10 +86,8 @@ pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
     );
     // Scan for `git` repository and related artifacts.
     'gitrules: for rule in scan_for_git(wd) {
-        println!("{:?}", rule);
         let glob: Glob = create_glob(&rule.path.as_path())
             .expect("Failed while transforming a rule into a glob");
-        println!("{:?}", glob);
         // Do not add duplicates!
         if existing.contains(&glob) {
             continue 'gitrules;
