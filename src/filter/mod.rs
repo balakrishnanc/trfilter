@@ -4,7 +4,6 @@ pub mod rule;
 mod scanner;
 
 use crate::ext::util;
-use globber::*;
 
 use globset::Glob;
 use rule::Rule;
@@ -63,11 +62,11 @@ pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
     let mut existing: HashSet<Glob> = HashSet::from_iter(
         rules
             .iter()
-            .map(|r| create_glob(&r.path.as_path()).expect("Failed to parse rule")),
+            .map(|r| globber::create_glob(&r.path.as_path()).expect("Failed to parse rule")),
     );
     // Scan for `git` repository and related artifacts.
     'gitrules: for rule in scanner::scan_for_git(wd) {
-        let glob: Glob = create_glob(&rule.path.as_path())
+        let glob: Glob = globber::create_glob(&rule.path.as_path())
             .expect("Failed while transforming a rule into a glob");
         // Do not add duplicates!
         if existing.contains(&glob) {
