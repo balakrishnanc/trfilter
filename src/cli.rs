@@ -1,4 +1,4 @@
-use trfilter::filter;
+use trfilter::filter::{self, checker};
 
 pub mod subcmds {
     pub const SHOW: &str = "show";
@@ -23,12 +23,8 @@ pub fn cmd_show(filter_file: &str) {
 
 // Check the rules read specified in the roaming filter file.
 pub fn cmd_check(filter_file: &str) {
-    match filter::list_rules(filter_file) {
-        Ok(rules) => {
-            for (pos, rule) in rules.iter().enumerate() {
-                println!("» {:>3} {}", pos + 1, rule)
-            }
-        }
+    match filter::read_rules(filter_file) {
+        Ok(rules) => checker::check_rules(rules),
         Err(e) => eprintln!("Error: {}", e),
     }
 }

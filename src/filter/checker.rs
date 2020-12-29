@@ -1,7 +1,7 @@
 use super::rule::Rule;
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use std::fmt;
 use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
 
 const CUR_DIR: &str = r".";
 const DBL_SLASH: &str = r"//";
@@ -11,7 +11,7 @@ const REL_PATH: &str = r"./";
 
 // Craft a glob pattern from the rule path to scan for files and directories
 // matching the rule path.
-pub fn create_glob(rule_path: &Path) -> Option<Glob> {
+fn create_glob(rule_path: &Path) -> Option<Glob> {
     let mut path = PathBuf::new();
 
     // Fix the start of the glob expression.
@@ -50,4 +50,12 @@ fn build_globset(rules: Vec<Rule>) -> GlobSet {
     glob_builder
         .build()
         .expect("Failed to build globs from filter rules!")
+}
+
+pub fn check_rules(rules: Vec<Rule>) {
+    let globs = build_globset(rules);
+    // Walk the directory matching the globs against each path.
+    for entry in WalkDir::new(CUR_DIR).into_iter().filter_map(|e| e.ok()) {
+        println!("{:?}", entry)
+    }
 }
