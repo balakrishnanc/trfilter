@@ -16,7 +16,7 @@ pub mod built_info {
 }
 
 fn main() {
-    let cli_opts = App::new(built_info::PKG_NAME)
+    let opts = App::new(built_info::PKG_NAME)
         .version(built_info::PKG_VERSION)
         .author("Balakrishnan Chandrasekaran <balakrishnan.c@gmail.com>")
         .about("Utility for editing Tresorit's roaming filter")
@@ -41,16 +41,16 @@ fn main() {
         )
         .get_matches();
 
-    let filter_file: &str = cli_opts.value_of(cli::args::FILTER).unwrap();
+    let filter_file: &str = opts.value_of(cli::args::FILTER).unwrap();
 
-    if let Some(_cmd_input) = cli_opts.subcommand_matches(cli::subcmds::SHOW) {
+    if let Some(_c) = opts.subcommand_matches(cli::subcmds::SHOW) {
         cli::cmd_show(filter_file);
-    } else if let Some(_cmd_input) = cli_opts.subcommand_matches(cli::subcmds::CHECK) {
+    } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::CHECK) {
         cli::cmd_check(filter_file);
-    } else if let Some(_cmd_input) = cli_opts.subcommand_matches(cli::subcmds::SUGGEST) {
+    } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::SUGGEST) {
         cli::cmd_suggest(filter_file);
     } else {
-        eprintln!("{}", cli_opts.usage());
+        eprintln!("{}", opts.usage());
         exit(1);
     }
 }
