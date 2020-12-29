@@ -53,18 +53,23 @@ fn build_globset(rules: &Vec<Rule>) -> GlobSet {
         .expect("Failed to build globs from filter rules!")
 }
 
-// Check each rule to indicate whether they match any file or directory.
-pub fn check_rules(rules: &Vec<Rule>) -> HashSet<usize> {
-    let globs = build_globset(rules);
+// Check a set of globs against files and directories in the current path, and
+// return the indices of globs that match any items.
+pub fn check_globs(globs: &GlobSet) -> HashSet<usize> {
     let mut glob_ids: HashSet<usize> = HashSet::new();
     // Walk the directory matching the globs against each path.
-    'walk: for entry in WalkDir::new(CUR_DIR).into_iter().filter_map(|e| e.ok()) {
-        let fp = entry.path();
+    'walk: for e in WalkDir::new(CUR_DIR).into_iter().filter_map(|e| e.ok()) {
+        let fp = e.path();
         for id in globs.matches_candidate(&Candidate::new(fp)).iter() {
-            if glob_ids.insert(*id) && glob_ids.len() == rules.len() {
+            if glob_ids.insert(*id) && glob_ids.len() == globs.len() {
                 break 'walk;
             }
         }
     }
     glob_ids
+}
+
+// Check each rule to indicate whether they match any file or directory.
+pub fn check_rules(rules: &Vec<Rule>) -> HashSet<usize> {
+    check_globs(&build_globset(rules))
 }
