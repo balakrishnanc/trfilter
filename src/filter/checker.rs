@@ -1,5 +1,6 @@
 use super::rule::Rule;
-use globset::{Glob, GlobSet, GlobSetBuilder};
+use globset::{Candidate, Glob, GlobSet, GlobSetBuilder};
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -16,7 +17,6 @@ fn create_glob(rule_path: &Path) -> Option<Glob> {
 
     // Fix the start of the glob expression.
     if rule_path.starts_with(DBL_SLASH) {
-        println!("{:?}", rule_path);
         // Replace the two slashes with a search pattern for all subdirectories.
         path.push(DBL_STAR_SLASH);
         path.push(&rule_path.to_str().expect("Failed to extract rule path")[2..]);
@@ -32,12 +32,13 @@ fn create_glob(rule_path: &Path) -> Option<Glob> {
 
     let fixed_path: PathBuf = path.iter().collect();
     let glob_path: &str = fixed_path.as_path().to_str()?;
+    // println!("‘{}’ -> ‘{}’", rule_path.display(), glob_path);
     Some(Glob::new(glob_path).expect("Failed to construct glob"))
 }
 
 // Build a set of globs, one for each filter rule, to scan for matching files
 // and directories.
-fn build_globset(rules: Vec<Rule>) -> GlobSet {
+fn build_globset(rules: &Vec<Rule>) -> GlobSet {
     let mut glob_builder = GlobSetBuilder::new();
     for rule in rules {
         if let Some(glob) = create_glob(&rule.path.as_path()) {
@@ -52,10 +53,18 @@ fn build_globset(rules: Vec<Rule>) -> GlobSet {
         .expect("Failed to build globs from filter rules!")
 }
 
-pub fn check_rules(rules: Vec<Rule>) {
+// Check each rule to indicate whether they match any file or directory.
+pub fn check_rules(rules: &Vec<Rule>) -> HashSet<usize> {
     let globs = build_globset(rules);
+    let mut glob_ids: HashSet<usize> = HashSet::new();
     // Walk the directory matching the globs against each path.
-    for entry in WalkDir::new(CUR_DIR).into_iter().filter_map(|e| e.ok()) {
-        println!("{:?}", entry)
+    'walk: for entry in WalkDir::new(CUR_DIR).into_iter().filter_map(|e| e.ok()) {
+        let fp = entry.path();
+        for id in globs.matches_candidate(&Candidate::new(fp)).iter() {
+            if glob_ids.insert(*id) && glob_ids.len() == rules.len() {
+                break 'walk;
+            }
+        }
     }
+    glob_ids
 }

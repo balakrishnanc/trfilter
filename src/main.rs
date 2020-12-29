@@ -1,7 +1,13 @@
+#[macro_use]
+extern crate lazy_static;
+extern crate trfilter;
+
 use clap::{App, Arg, SubCommand};
 
 mod cli;
-use trfilter::filter::defaults as def;
+mod filter;
+mod util;
+use filter::defaults as def;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));

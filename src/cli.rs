@@ -1,4 +1,5 @@
-use trfilter::filter::{self, checker};
+use super::filter::{self, checker};
+use ansi_term::Colour as Color;
 
 pub mod subcmds {
     pub const SHOW: &str = "show";
@@ -24,7 +25,16 @@ pub fn cmd_show(filter_file: &str) {
 // Check the rules read specified in the roaming filter file.
 pub fn cmd_check(filter_file: &str) {
     match filter::read_rules(filter_file) {
-        Ok(rules) => checker::check_rules(rules),
+        Ok(rules) => {
+            let matches = checker::check_rules(&rules);
+            for (i, rule) in rules.iter().enumerate() {
+                let p = format!("{}", rule.path.display());
+                match matches.contains(&i) {
+                    true => println!("{}", Color::Green.paint(p)),
+                    false => println!("{}", Color::Yellow.paint(p)),
+                }
+            }
+        }
         Err(e) => eprintln!("Error: {}", e),
     }
 }
