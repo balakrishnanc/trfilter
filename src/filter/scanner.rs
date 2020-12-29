@@ -2,10 +2,11 @@ use std::path::{Path, PathBuf};
 
 use super::rule::{self, Action, Pathtype, Rule};
 
-const GIT_DIR: &str = ".git";
+// Version-control-systems directories.
+const VCS_DIRS: [&str; 3] = [".git", ".hg", ".svn"];
 
-// Check if the target path contains a source-code repository.
-pub fn scan_for_repo(wd: &Path, repo_dir: &str) -> Vec<Rule> {
+// Check if the target path contains a given directory.
+fn scan_for_dir(wd: &Path, repo_dir: &str) -> Vec<Rule> {
     let mut path_buf: PathBuf = PathBuf::new();
     // Construct `git` path relative to given path.PathBuf
     path_buf.push(wd);
@@ -22,7 +23,7 @@ pub fn scan_for_repo(wd: &Path, repo_dir: &str) -> Vec<Rule> {
     rules
 }
 
-// Check if the target path contains a `git` repository.
-pub fn scan_for_git(wd: &Path) -> Vec<Rule> {
-    scan_for_repo(wd, GIT_DIR)
+// Check if the target path contains any version-control systems.
+pub fn scan_for_vcs(wd: &Path) -> Vec<Rule> {
+    VCS_DIRS.iter().flat_map(|d| scan_for_dir(wd, d)).collect()
 }
