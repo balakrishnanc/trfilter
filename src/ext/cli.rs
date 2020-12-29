@@ -30,8 +30,8 @@ pub fn cmd_check(filter_file: &str) {
             for (i, rule) in rules.iter().enumerate() {
                 let p = format!("{}", rule.path.display());
                 match matches.contains(&i) {
-                    true => println!("{}", Color::Green.paint(p)),
-                    false => println!("{}", Color::Yellow.paint(p)),
+                    true => println!("{:>3} {}", i + 1, Color::Red.paint(p)),
+                    false => println!("{:>3} {}", i + 1, Color::Yellow.paint(p)),
                 }
             }
         }
