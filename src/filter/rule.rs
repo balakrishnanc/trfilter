@@ -186,7 +186,7 @@ pub struct Rule {
     pub ts: Timestamp,
     pub thr: ThreadType,
     pub prio: u32,
-    pub pathtype: Pathtype,
+    pub path_type: Pathtype,
     pub case_sens: bool,
     pub path: PathBuf,
 }
@@ -217,7 +217,7 @@ impl From<&str> for Rule {
         let ts: Timestamp = Timestamp::from(&mut attrs);
         let thr: ThreadType = ThreadType::from(&mut attrs);
         let prio: u32 = parse_prio_from(&mut attrs);
-        let pathtype: Pathtype = Pathtype::from(&mut attrs);
+        let path_type: Pathtype = Pathtype::from(&mut attrs);
         let case_sens: bool = parse_case_sens_from(&mut attrs);
 
         // `attrs` should be empty by now.
@@ -230,7 +230,7 @@ impl From<&str> for Rule {
             ts: ts,
             thr: thr,
             prio: prio,
-            pathtype: pathtype,
+            path_type: path_type,
             case_sens: case_sens,
             path: Path::new(&path.to_string()).to_path_buf(),
         }
