@@ -4,8 +4,8 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 
 const CUR_DIR: &str = r".";
-const DBL_STAR_SLASH: &str = r"**/";
 const DBL_SLASH: &str = r"//";
+const DBL_STAR_SLASH: &str = r"**/";
 const PATH_SEP: &str = r"/";
 const REL_PATH: &str = r"./";
 
@@ -17,9 +17,9 @@ pub fn create_glob(rule_path: &Path) -> Option<Glob> {
     // Fix the start of the glob expression.
     if rule_path.starts_with(DBL_SLASH) {
         println!("{:?}", rule_path);
-        // Replace the first slash with two asterisks.
+        // Replace the two slashes with a search pattern for all subdirectories.
         path.push(DBL_STAR_SLASH);
-        path.push(&rule_path.to_str().unwrap()[2..]);
+        path.push(&rule_path.to_str().expect("Failed to extract rule path")[2..]);
     } else if rule_path.starts_with(PATH_SEP) {
         // Fix the rule path to anchor it to the current directory.
         path.push(CUR_DIR);
