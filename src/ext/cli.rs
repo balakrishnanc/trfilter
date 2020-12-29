@@ -1,5 +1,4 @@
 use ansi_term::Colour as Color;
-use std::path::Path;
 
 use crate::filter::{self, checker};
 
@@ -45,14 +44,9 @@ pub fn cmd_check(filter_file: &str) {
 }
 
 // Suggest new rules, which can be added to the roaming filter file.
-pub fn cmd_suggest(_filter_file: &str) {
-    println!("{:?}", checker::check_for_git(Path::new(".")));
-    let svn_path = Path::new(".svn");
-    if svn_path.exists() {
-        println!("{}", svn_path.display());
-    }
-    let hg_path = Path::new(".hg");
-    if hg_path.exists() {
-        println!("{}", hg_path.display());
-    }
+pub fn cmd_suggest(filter_file: &str) {
+    match filter::update_rules(filter_file) {
+        Ok(rules) => println!("#rules: {}", rules.len()),
+        Err(e) => eprintln!("Error: {}", e),
+    };
 }
