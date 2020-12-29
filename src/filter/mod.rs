@@ -1,9 +1,15 @@
 pub mod checker;
+pub mod globber;
 pub mod rule;
 
 use crate::ext::util;
+use globber::*;
+
+use globset::Glob;
 use rule::{Action, Pathtype, Rule};
+use std::collections::HashSet;
 use std::io::{self, Error, ErrorKind};
+use std::iter::FromIterator;
 use std::path::{Path, PathBuf};
 
 pub mod defaults {
@@ -68,7 +74,30 @@ pub fn scan_for_git(wd: &Path) -> Vec<Rule> {
 
 // Checks for possible updates to filter rules.
 pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
+    let wd: &Path = Path::new(".");
+    // When updating rules, do not change the order of existing entries.
     let mut rules: Vec<Rule> = mk_rules(filename)?;
-    rules.append(&mut scan_for_git(Path::new(".")));
+    // Maintain a set of globs corresponding to the filters to avoid adding
+    // duplicate filter rules.
+    let mut existing: HashSet<Glob> = HashSet::from_iter(
+        rules
+            .iter()
+            .map(|r| create_glob(&r.path.as_path()).expect("Failed to parse rule")),
+    );
+    // Scan for `git` repository and related artifacts.
+    'gitrules: for rule in scan_for_git(wd) {
+        println!("{:?}", rule);
+        let glob: Glob = create_glob(&rule.path.as_path())
+            .expect("Failed while transforming a rule into a glob");
+        println!("{:?}", glob);
+        // Do not add duplicates!
+        if existing.contains(&glob) {
+            continue 'gitrules;
+        }
+        // New rule!
+        existing.insert(glob);
+        rules.push(rule);
+    }
+    // rules.append(&mut scan_for_git(Path::new(".")));
     Ok(rules)
 }
