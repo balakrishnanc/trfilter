@@ -28,11 +28,13 @@ pub fn cmd_check(filter_file: &str) {
         Ok(rules) => {
             let matches = checker::check_rules(&rules);
             for (i, rule) in rules.iter().enumerate() {
-                let p = format!("{}", rule.path.display());
-                match matches.contains(&i) {
-                    true => println!("{:>3} {}", i + 1, Color::Red.paint(p)),
-                    false => println!("{:>3} {}", i + 1, Color::Yellow.paint(p)),
-                }
+                let msg = match matches.contains(&i) {
+                    true => Color::Green
+                        .bold()
+                        .paint(format!("+ {}", rule.path.display())),
+                    false => Color::Red.paint(format!("- {}", rule.path.display())),
+                };
+                println!("{:>3} {}", i + 1, msg);
             }
         }
         Err(e) => eprintln!("Error: {}", e),
