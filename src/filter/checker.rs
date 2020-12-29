@@ -1,4 +1,4 @@
-use super::rule::Rule;
+use super::rule::{self, Action, Pathtype, Rule};
 use globset::{Candidate, Glob, GlobSet, GlobSetBuilder};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -72,4 +72,22 @@ pub fn check_globs(globs: &GlobSet) -> HashSet<usize> {
 // Check each rule to indicate whether they match any file or directory.
 pub fn check_rules(rules: &Vec<Rule>) -> HashSet<usize> {
     check_globs(&build_globset(rules))
+}
+
+// Check if the target path contains a git repository
+pub fn check_for_git(wd: &Path) -> Vec<Rule> {
+    let mut path_buf: PathBuf = PathBuf::new();
+    // Construct `git` path relative to given path.PathBuf
+    path_buf.push(wd);
+    path_buf.push(".git");
+    let git_path: PathBuf = path_buf.iter().collect::<PathBuf>();
+    let mut rules: Vec<Rule> = vec![];
+    if git_path.exists() {
+        rules.push(rule::mk_simple_rule(
+            Action::Ignore,
+            Pathtype::Dir,
+            git_path.as_path(),
+        ));
+    }
+    rules
 }

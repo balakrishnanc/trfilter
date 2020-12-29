@@ -236,3 +236,16 @@ impl From<&str> for Rule {
         }
     }
 }
+
+// Create a `Rule` by populating unspecified fields with defaults.
+pub fn mk_simple_rule(action: Action, path_type: Pathtype, path: &Path) -> Rule {
+    Rule {
+        action: action,
+        ts: Timestamp::Remote,
+        thr: ThreadType::Norm,
+        prio: 3,
+        path_type: path_type,
+        case_sens: false,
+        path: Path::new(path).to_path_buf(),
+    }
+}

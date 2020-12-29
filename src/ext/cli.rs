@@ -46,10 +46,7 @@ pub fn cmd_check(filter_file: &str) {
 
 // Suggest new rules, which can be added to the roaming filter file.
 pub fn cmd_suggest(_filter_file: &str) {
-    let git_path = Path::new(".git");
-    if git_path.exists() {
-        println!("{}", git_path.display());
-    }
+    println!("{:?}", checker::check_for_git(Path::new(".")));
     let svn_path = Path::new(".svn");
     if svn_path.exists() {
         println!("{}", svn_path.display());
