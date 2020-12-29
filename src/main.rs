@@ -6,6 +6,7 @@ mod ext;
 mod filter;
 
 use clap::{App, Arg, SubCommand};
+use std::process::exit;
 
 use ext::cli;
 use filter::defaults as def;
@@ -36,5 +37,8 @@ fn main() {
         cli::cmd_show(filter_file);
     } else if let Some(_cmd_input) = cli_opts.subcommand_matches(cli::subcmds::CHECK) {
         cli::cmd_check(filter_file);
+    } else {
+        eprintln!("{}", cli_opts.usage());
+        exit(1);
     }
 }
