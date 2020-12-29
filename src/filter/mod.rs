@@ -1,7 +1,7 @@
 pub mod checker;
 pub mod rule;
 
-use crate::util;
+use crate::ext::util;
 use rule::Rule;
 use std::io;
 use std::path::Path;

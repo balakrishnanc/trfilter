@@ -1,4 +1,4 @@
-use super::filter::{self, checker};
+use crate::filter::{self, checker};
 use ansi_term::Colour as Color;
 
 pub mod subcmds {

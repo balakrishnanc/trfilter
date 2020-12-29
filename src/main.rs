@@ -2,11 +2,12 @@
 extern crate lazy_static;
 extern crate trfilter;
 
+mod ext;
+mod filter;
+
 use clap::{App, Arg, SubCommand};
 
-mod cli;
-mod filter;
-mod util;
+use ext::cli;
 use filter::defaults as def;
 
 pub mod built_info {
