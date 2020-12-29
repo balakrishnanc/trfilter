@@ -1,5 +1,7 @@
-use crate::filter::{self, checker};
 use ansi_term::Colour as Color;
+use std::path::Path;
+
+use crate::filter::{self, checker};
 
 pub mod subcmds {
     pub const SHOW: &str = "show";
@@ -44,5 +46,16 @@ pub fn cmd_check(filter_file: &str) {
 
 // Suggest new rules, which can be added to the roaming filter file.
 pub fn cmd_suggest(_filter_file: &str) {
-    eprintln!("Functionality not been implemented yet!");
+    let git_path = Path::new(".git");
+    if git_path.exists() {
+        println!("{}", git_path.display());
+    }
+    let svn_path = Path::new(".svn");
+    if svn_path.exists() {
+        println!("{}", git_path.display());
+    }
+    let hg_path = Path::new(".hg");
+    if hg_path.exists() {
+        println!("{}", git_path.display());
+    }
 }
