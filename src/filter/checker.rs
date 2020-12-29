@@ -32,7 +32,7 @@ pub fn create_glob(rule_path: &Path) -> Option<Glob> {
 
     let fixed_path: PathBuf = path.iter().collect();
     let glob_path: &str = fixed_path.as_path().to_str()?;
-    Some(Glob::new(glob_path).unwrap())
+    Some(Glob::new(glob_path).expect("Failed to construct glob"))
 }
 
 // Build a set of globs, one for each filter rule, to scan for matching files
