@@ -26,10 +26,7 @@ pub fn list_rules(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
 // Returns a vector of filter rules read from the file.
 pub fn read_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
     match util::read_lines(filename) {
-        Ok(lines) => {
-            let rules = lines.map(|line| parse(&line.unwrap()));
-            Ok(rules.collect())
-        }
+        Ok(lines) => Ok(lines.map(|line| parse(&line.unwrap())).collect()),
         Err(e) => Err(e),
     }
 }
