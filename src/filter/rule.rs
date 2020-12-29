@@ -1,4 +1,5 @@
 use regex::Regex;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 // Represents the `Sync` attribute, which specifies whether to synchronize,
@@ -187,7 +188,7 @@ pub struct Rule {
     pub prio: u32,
     pub pathtype: Pathtype,
     pub case_sens: bool,
-    pub path: String,
+    pub path: PathBuf,
 }
 
 // Retrieve filter rule’s attributes and the path pattern.
@@ -231,7 +232,7 @@ impl From<&str> for Rule {
             prio: prio,
             pathtype: pathtype,
             case_sens: case_sens,
-            path: path.to_string(),
+            path: Path::new(&path.to_string()).to_path_buf(),
         }
     }
 }

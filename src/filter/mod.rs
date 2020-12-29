@@ -1,3 +1,4 @@
+pub mod checker;
 pub mod rule;
 
 use super::util;
@@ -25,7 +26,10 @@ pub fn list_rules(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
 // Returns a vector of filter rules read from the file.
 pub fn read_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
     match util::read_lines(filename) {
-        Ok(lines) => Ok(lines.map(|line| parse(&line.unwrap())).collect()),
+        Ok(lines) => {
+            let rules = lines.map(|line| parse(&line.unwrap()));
+            Ok(rules.collect())
+        }
         Err(e) => Err(e),
     }
 }
