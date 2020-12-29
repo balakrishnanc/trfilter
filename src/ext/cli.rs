@@ -52,10 +52,10 @@ pub fn cmd_suggest(_filter_file: &str) {
     }
     let svn_path = Path::new(".svn");
     if svn_path.exists() {
-        println!("{}", git_path.display());
+        println!("{}", svn_path.display());
     }
     let hg_path = Path::new(".hg");
     if hg_path.exists() {
-        println!("{}", git_path.display());
+        println!("{}", hg_path.display());
     }
 }
