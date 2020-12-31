@@ -46,7 +46,12 @@ pub fn cmd_check(filter_file: &str) {
 // Suggest new rules, which can be added to the roaming filter file.
 pub fn cmd_suggest(filter_file: &str) {
     match filter::update_rules(filter_file) {
-        Ok(rules) => println!("#rules: {}", rules.len()),
+        Ok(rules) => {
+            println!("#rules: {}", rules.len());
+            for rule in rules.iter() {
+                println!("{:?}", rule);
+            }
+        }
         Err(e) => eprintln!("Error: {}", e),
     };
 }
