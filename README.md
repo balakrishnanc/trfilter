@@ -28,6 +28,8 @@ SUBCOMMANDS:
     upgrade    Initialize or upgrade roaming filter with suggestions
 ```
 
+The `check` option checks if the filter rule path matches any file or directory under the current path. The `suggest` command recursively scans the current path for suggesting additional files and directories to be ignored by `Tresorit`. The `upgrade` commands adds such suggestions to the roaming filter.
+
 ## Caveats
 
 _It is my first attempt to write more than a simple one-file program in rust. Constructive feedback is always welcome!_
