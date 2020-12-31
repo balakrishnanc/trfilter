@@ -52,7 +52,7 @@ fn main() {
     } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::CHECK) {
         cli::cmd_check(filter_file);
     } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::SUGGEST) {
-        cli::cmd_suggest(filter_file);
+        cli::cmd_suggest(filter_file).expect("Failed to suggest updates to roaming filter!");
     } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::UPGRADE) {
         cli::cmd_upgrade(filter_file).expect("Failed to upgrade roaming filter!");
     } else {

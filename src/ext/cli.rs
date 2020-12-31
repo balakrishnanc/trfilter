@@ -46,13 +46,14 @@ pub fn cmd_check(filter_file: &str) {
 }
 
 // Suggest new rules, which can be added to the roaming filter file.
-pub fn cmd_suggest(filter_file: &str) {
+pub fn cmd_suggest(filter_file: &str) -> io::Result<()> {
     match filter::update_rules(filter_file) {
         Ok(rules) => {
-            let n = rules.len();
             for rule in rules.iter() {
                 println!("{}", Color::Yellow.bold().paint(format!("{}", rule)))
             }
+            // Display the number of rules suggested.
+            let n = rules.len();
             if n == 0 {
                 eprintln!("No new rules to suggest.");
             } else if n == 1 {
@@ -60,9 +61,10 @@ pub fn cmd_suggest(filter_file: &str) {
             } else {
                 eprintln!("{} new rules suggested.", n);
             }
+            Ok(())
         }
-        Err(e) => eprintln!("Error: {}", e),
-    };
+        Err(e) => Err(e),
+    }
 }
 
 // Write or append suggested rules to the roaming filter file.
