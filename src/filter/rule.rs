@@ -1,15 +1,30 @@
 use regex::Regex;
+use std::fmt;
 use std::path::{Path, PathBuf};
 
 use super::common::*;
 
-#[derive(Debug)]
+// Error when converting a file path pattern read from a file (e.g., .gitignore)
+// to a string for transforming it later into a filter-rule path.
+pub type MalformedFilePathErr = &'static str;
+
+#[derive(Debug, PartialEq)]
 // Represents the `Sync` attribute, which specifies whether to synchronize,
 // ignore, or delete the items matched by the rule.
 pub enum Action {
     Sync,
     Ignore,
     Junk,
+}
+
+impl fmt::Display for Action {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Action::Sync => write!(f, "Sync"),
+            Action::Ignore => write!(f, "Ignore"),
+            Action::Junk => write!(f, "Junk"),
+        }
+    }
 }
 
 impl From<&str> for Action {
@@ -39,12 +54,21 @@ impl From<&mut Vec<&str>> for Action {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 // Represents the `Date` attribute, which speicifies the timestamp to use for a
 // synced file.
 pub enum Timestamp {
     Remote,
     Local,
+}
+
+impl fmt::Display for Timestamp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Timestamp::Remote => write!(f, "Date=Remote"),
+            Timestamp::Local => write!(f, "Date=Local"),
+        }
+    }
 }
 
 impl From<&str> for Timestamp {
@@ -73,12 +97,21 @@ impl From<&mut Vec<&str>> for Timestamp {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 // Represents the `Threading` attribute, which specifies the thread categories
 // for syncing.
 pub enum ThreadType {
     Norm,
     High,
+}
+
+impl fmt::Display for ThreadType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ThreadType::Norm => write!(f, "Threading=Normal"),
+            ThreadType::High => write!(f, "Threading=Priority"),
+        }
+    }
 }
 
 impl From<&str> for ThreadType {
@@ -127,13 +160,23 @@ fn parse_prio_from(attrs: &mut Vec<&str>) -> u32 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 // Represents the `PathType` attribute which specifies the scope of the filter
 // rule (i.e., which directories or files the concerned rule applies to).
 pub enum Pathtype {
     File,
     Dir,
     All,
+}
+
+impl fmt::Display for Pathtype {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Pathtype::File => write!(f, "PathType=File"),
+            Pathtype::Dir => write!(f, "PathType=Directory"),
+            Pathtype::All => write!(f, ""),
+        }
+    }
 }
 
 impl From<&str> for Pathtype {
@@ -182,7 +225,7 @@ fn parse_case_sens_from(attrs: &mut Vec<&str>) -> bool {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Rule {
     pub action: Action,
     pub ts: Timestamp,
@@ -191,6 +234,40 @@ pub struct Rule {
     pub path_type: Pathtype,
     pub case_sens: bool,
     pub path: PathBuf,
+}
+
+impl fmt::Display for Rule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if (self.action == Action::Ignore)
+            && (self.ts == Timestamp::Remote)
+            && (self.thr == ThreadType::Norm)
+            && (self.prio == 3)
+        {
+            if self.path_type != Pathtype::File {
+                write!(f, "[{}] {}", self.action, self.path.display())
+            } else {
+                write!(
+                    f,
+                    "[{},{}] {}",
+                    self.action,
+                    self.path_type,
+                    self.path.display()
+                )
+            }
+        } else {
+            write!(
+                f,
+                "[{},{},{},Priority={},{},CaseSensitive={}] {}",
+                self.action,
+                self.ts,
+                self.thr,
+                self.prio,
+                self.path_type,
+                self.case_sens,
+                self.path.display()
+            )
+        }
+    }
 }
 
 // Retrieve filter rule’s attributes and the path pattern.
@@ -240,32 +317,46 @@ impl From<&str> for Rule {
 }
 
 // Format glob in an `ignore` file to a filter rule path.
-fn fmt_path(fp: &Path) -> PathBuf {
-    let mut path_buf: PathBuf = PathBuf::new();
-    let fp_str = &fp.to_str().expect("Failed to parse file path to string");
+fn format_path(fp: &Path) -> Result<String, MalformedFilePathErr> {
+    let mut rule_path = String::new();
+    let fp_str = fp
+        .to_str()
+        .ok_or("format_path: Failed to convert `&Path` to `&str`")?;
     // Fix the start of the glob expression.
-    if fp.starts_with(DBL_STAR_SLASH) {
-        // Replace the two slashes with a search pattern for all subdirectories.
-        path_buf.push(DBL_SLASH);
-        path_buf.push(&fp_str[3..]);
-    } else if fp.starts_with(REL_PATH) {
-        // Fix the rule path to anchor it to the current directory.
-        path_buf.push(&fp_str[2..]);
+    if fp_str.starts_with(PATH_SEP) {
+        // Skip the leading slash and anchor it to current directory.
+        rule_path.push_str(&fp_str[1..]);
+    } else if fp_str.starts_with(DBL_STAR_SLASH) {
+        // Use the filter-rule specific matcher.
+        rule_path.push_str(DBL_SLASH);
+        rule_path.push_str(&fp_str[3..]);
+    } else if fp_str.starts_with(REL_PATH) {
+        // Skip the relative path part and anchor it to current directory.
+        rule_path.push_str(&fp_str[2..]);
+    } else if fp_str.starts_with(STAR) {
+        // Append the filter-rule specific pattern matcher.
+        rule_path.push_str(DBL_SLASH_STAR_DOT);
+        rule_path.push_str(&fp_str[2..]);
     } else {
-        path_buf.push(&fp_str);
+        rule_path.push_str(&fp_str);
     }
-    path_buf
+    Ok(rule_path)
 }
 
 // Create a `Rule` by populating unspecified fields with defaults.
-pub fn mk_simple_rule(action: Action, path_type: Pathtype, fp: &Path) -> Rule {
-    Rule {
+pub fn mk_simple_rule(
+    action: Action,
+    path_type: Pathtype,
+    fp: &Path,
+) -> Result<Rule, MalformedFilePathErr> {
+    let rule_path = format_path(fp)?;
+    Ok(Rule {
         action: action,
         ts: Timestamp::Remote,
         thr: ThreadType::Norm,
         prio: 3,
         path_type: path_type,
         case_sens: false,
-        path: fmt_path(fp),
-    }
+        path: PathBuf::from(rule_path),
+    })
 }

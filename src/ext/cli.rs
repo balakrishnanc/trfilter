@@ -47,9 +47,16 @@ pub fn cmd_check(filter_file: &str) {
 pub fn cmd_suggest(filter_file: &str) {
     match filter::update_rules(filter_file) {
         Ok(rules) => {
-            println!("#rules: {}", rules.len());
+            let n = rules.len();
             for rule in rules.iter() {
-                println!("{:?}", rule);
+                println!("{}", Color::Yellow.bold().paint(format!("{}", rule)))
+            }
+            if n == 0 {
+                eprintln!("No new rules to suggest.");
+            } else if n == 1 {
+                eprintln!("1 new rule suggested.");
+            } else {
+                eprintln!("{} new rules suggested.", n);
             }
         }
         Err(e) => eprintln!("Error: {}", e),
