@@ -1,6 +1,8 @@
 use regex::Regex;
 use std::path::{Path, PathBuf};
 
+use super::common::*;
+
 #[derive(Debug)]
 // Represents the `Sync` attribute, which specifies whether to synchronize,
 // ignore, or delete the items matched by the rule.
@@ -237,8 +239,26 @@ impl From<&str> for Rule {
     }
 }
 
+// Format glob in an `ignore` file to a filter rule path.
+fn fmt_path(fp: &Path) -> PathBuf {
+    let mut path_buf: PathBuf = PathBuf::new();
+    let fp_str = &fp.to_str().expect("Failed to parse file path to string");
+    // Fix the start of the glob expression.
+    if fp.starts_with(DBL_STAR_SLASH) {
+        // Replace the two slashes with a search pattern for all subdirectories.
+        path_buf.push(DBL_SLASH);
+        path_buf.push(&fp_str[3..]);
+    } else if fp.starts_with(REL_PATH) {
+        // Fix the rule path to anchor it to the current directory.
+        path_buf.push(&fp_str[2..]);
+    } else {
+        path_buf.push(&fp_str);
+    }
+    path_buf
+}
+
 // Create a `Rule` by populating unspecified fields with defaults.
-pub fn mk_simple_rule(action: Action, path_type: Pathtype, path: &Path) -> Rule {
+pub fn mk_simple_rule(action: Action, path_type: Pathtype, fp: &Path) -> Rule {
     Rule {
         action: action,
         ts: Timestamp::Remote,
@@ -246,6 +266,6 @@ pub fn mk_simple_rule(action: Action, path_type: Pathtype, path: &Path) -> Rule 
         prio: 3,
         path_type: path_type,
         case_sens: false,
-        path: Path::new(path).to_path_buf(),
+        path: fmt_path(fp),
     }
 }

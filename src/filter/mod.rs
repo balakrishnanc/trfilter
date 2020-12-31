@@ -4,14 +4,13 @@ pub mod globber;
 pub mod rule;
 mod scanner;
 
-use crate::ext::util;
-
-use globset::Glob;
 use rule::Rule;
 use std::collections::HashSet;
 use std::io::{self, Error, ErrorKind};
 use std::iter::FromIterator;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+use crate::ext::util;
 
 pub mod defaults {
     // Default `roaming filter` path (relative to current directory).
@@ -57,26 +56,20 @@ fn mk_rules(filename: impl AsRef<Path>) -> Result<Vec<Rule>, Error> {
 pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
     let wd: &Path = Path::new(".");
     // When updating rules, do not change the order of existing entries.
-    let mut rules: Vec<Rule> = mk_rules(filename)?;
-    // Maintain a set of globs corresponding to the filters to avoid adding
-    // duplicate filter rules.
-    let mut existing: HashSet<Glob> = HashSet::from_iter(
-        rules
-            .iter()
-            .map(|r| globber::create_glob(&r.path.as_path()).expect("Failed to parse rule")),
-    );
-    // Scan for `git` repository and related artifacts.
-    'gitrules: for rule in scanner::scan_for_vcs(wd) {
-        let glob: Glob = globber::create_glob(&rule.path.as_path())
-            .expect("Failed while transforming a rule into a glob");
+    let old_rules: Vec<Rule> = mk_rules(filename)?;
+    // Maintain a set of rule paths corresponding to the filters to avoid
+    // duplicating rules.
+    let mut rule_paths: HashSet<PathBuf> =
+        HashSet::from_iter(old_rules.iter().map(|r| PathBuf::from(r.path.to_owned())));
+    let mut new_rules: Vec<Rule> = vec![];
+    for rule in scanner::scan_dir(wd)? {
+        let rule_path = rule.path.to_owned();
         // Do not add duplicates!
-        if existing.contains(&glob) {
-            continue 'gitrules;
+        if !rule_paths.contains(&rule_path) {
+            // New rule!
+            rule_paths.insert(rule_path);
+            new_rules.push(rule);
         }
-        // New rule!
-        existing.insert(glob);
-        rules.push(rule);
     }
-    // rules.append(&mut scan_for_git(Path::new(".")));
-    Ok(rules)
+    Ok(new_rules)
 }
