@@ -2,6 +2,7 @@ use globset::{Candidate, GlobSet};
 use std::collections::HashSet;
 use walkdir::WalkDir;
 
+use super::common::*;
 use super::globber::*;
 use super::rule::Rule;
 

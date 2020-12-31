@@ -1,13 +1,8 @@
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use std::path::{Path, PathBuf};
 
+use super::common::*;
 use super::rule::Rule;
-
-pub const CUR_DIR: &str = r".";
-pub const DBL_SLASH: &str = r"//";
-pub const DBL_STAR_SLASH: &str = r"**/";
-pub const PATH_SEP: &str = r"/";
-pub const REL_PATH: &str = r"./";
 
 // Craft a glob pattern from the rule path to scan for files and directories
 // matching the rule path.

@@ -1,4 +1,5 @@
 pub mod checker;
+pub mod common;
 pub mod globber;
 pub mod rule;
 mod scanner;
