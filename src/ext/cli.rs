@@ -1,4 +1,5 @@
 use ansi_term::Colour as Color;
+use std::io;
 
 use crate::filter::{self, checker};
 
@@ -6,6 +7,7 @@ pub mod subcmds {
     pub const SHOW: &str = "show";
     pub const CHECK: &str = "check";
     pub const SUGGEST: &str = "suggest";
+    pub const UPGRADE: &str = "upgrade";
 }
 
 pub mod args {
@@ -61,4 +63,9 @@ pub fn cmd_suggest(filter_file: &str) {
         }
         Err(e) => eprintln!("Error: {}", e),
     };
+}
+
+// Write or append suggested rules to the roaming filter file.
+pub fn cmd_upgrade(filter_file: &str) -> io::Result<()> {
+    filter::upgrade_rules(filter_file)
 }

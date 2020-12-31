@@ -6,6 +6,8 @@ mod scanner;
 
 use rule::Rule;
 use std::collections::HashSet;
+use std::fs::OpenOptions;
+use std::io::prelude::Write;
 use std::io::{self, Error, ErrorKind};
 use std::iter::FromIterator;
 use std::path::{Path, PathBuf};
@@ -72,4 +74,17 @@ pub fn update_rules(filename: impl AsRef<Path>) -> io::Result<Vec<Rule>> {
         }
     }
     Ok(new_rules)
+}
+
+// Upgrade filter rules with updates, if any.
+pub fn upgrade_rules(filename: impl AsRef<Path>) -> io::Result<()> {
+    let new_rules = update_rules(filename.as_ref())?;
+    let mut f = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(filename)?;
+    for rule in new_rules {
+        writeln!(f, "{}", rule)?
+    }
+    Ok(())
 }
