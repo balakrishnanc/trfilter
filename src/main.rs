@@ -6,6 +6,7 @@ mod ext;
 mod filter;
 
 use clap::{App, Arg, SubCommand};
+use std::io;
 use std::process::exit;
 
 use ext::cli;
@@ -13,6 +14,13 @@ use filter::defaults as def;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
+
+fn handle_err(prefix: &str, res: io::Result<()>) {
+    if let Err(err) = res {
+        eprintln!("[Error] {}: {}", prefix, err);
+        exit(-1);
+    }
 }
 
 fn main() {
@@ -48,13 +56,22 @@ fn main() {
     let filter_file: &str = opts.value_of(cli::args::FILTER).unwrap();
 
     if let Some(_c) = opts.subcommand_matches(cli::subcmds::SHOW) {
-        cli::cmd_show(filter_file);
+        handle_err("Failed to show roaming filter", cli::cmd_show(filter_file));
     } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::CHECK) {
-        cli::cmd_check(filter_file);
+        handle_err(
+            "Failed to check roaming filter",
+            cli::cmd_check(filter_file),
+        );
     } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::SUGGEST) {
-        cli::cmd_suggest(filter_file).expect("Failed to suggest updates to roaming filter!");
+        handle_err(
+            "Failed to suggest updates to roaming filter",
+            cli::cmd_suggest(filter_file),
+        );
     } else if let Some(_c) = opts.subcommand_matches(cli::subcmds::UPGRADE) {
-        cli::cmd_upgrade(filter_file).expect("Failed to upgrade roaming filter!");
+        handle_err(
+            "Failed to upgrade roaming filter",
+            cli::cmd_upgrade(filter_file),
+        );
     } else {
         eprintln!("{}", opts.usage());
         exit(1);

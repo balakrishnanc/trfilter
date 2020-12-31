@@ -15,19 +15,20 @@ pub mod args {
 }
 
 // Show the rules read listed in the roaming filter file.
-pub fn cmd_show(filter_file: &str) {
+pub fn cmd_show(filter_file: &str) -> io::Result<()> {
     match filter::list_rules(filter_file) {
         Ok(rules) => {
             for (pos, rule) in rules.iter().enumerate() {
-                println!("» {:>3} {}", pos + 1, rule)
+                println!("» {:>3} {}", pos + 1, rule);
             }
+            Ok(())
         }
-        Err(e) => eprintln!("Error: {}", e),
+        Err(e) => Err(e),
     }
 }
 
 // Check the rules read specified in the roaming filter file.
-pub fn cmd_check(filter_file: &str) {
+pub fn cmd_check(filter_file: &str) -> io::Result<()> {
     match filter::read_rules(filter_file) {
         Ok(rules) => {
             let matches = checker::check_rules(&rules);
@@ -40,8 +41,9 @@ pub fn cmd_check(filter_file: &str) {
                 };
                 println!("{:>3} {}", i + 1, msg);
             }
+            Ok(())
         }
-        Err(e) => eprintln!("Error: {}", e),
+        Err(e) => Err(e),
     }
 }
 
