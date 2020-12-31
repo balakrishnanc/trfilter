@@ -15,22 +15,26 @@ pub fn scan_ignore(ign_file: &Path) -> Option<Vec<Rule>> {
     if !(ign_file.ends_with(".gitignore") || ign_file.ends_with(".hgignore")) {
         return None;
     }
+    let base_dir = ign_file.parent()?;
     match util::read_lines(ign_file) {
         Ok(lines) => {
             let mut rules: Vec<Rule> = vec![];
             for line in lines.map(|line| line.expect("Failed to read contents of the ignore file"))
             {
-                let fp = Path::new(&line);
-                let path_type: Pathtype = if fp.ends_with(PATH_SEP) {
+                let ep = Path::new(&line);
+                let path_type: Pathtype = if ep.ends_with(PATH_SEP) {
                     Pathtype::All
-                } else if fp.extension().is_none() {
+                } else if ep.extension().is_none() {
                     Pathtype::All
                 } else {
                     Pathtype::File
                 };
-                let path_buf = PathBuf::from(&line);
+                let mut path_buf = PathBuf::new();
+                path_buf.push(base_dir);
+                path_buf.push(ep);
+                let fp: PathBuf = path_buf.iter().collect();
                 rules.push(
-                    rule::mk_simple_rule(Action::Ignore, path_type, path_buf.as_path())
+                    rule::mk_simple_rule(Action::Ignore, path_type, fp.as_path())
                         .expect("Failed to form a filter rule from path glob"),
                 )
             }
