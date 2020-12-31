@@ -63,6 +63,10 @@ pub fn scan_dir(wd: &Path) -> io::Result<Vec<Rule>> {
                     rule::mk_simple_rule(Action::Ignore, Pathtype::Dir, fp.as_path())
                         .expect("Failed to form a filter rule from path glob"),
                 );
+            } else {
+                for rule in scan_dir(fp.as_path())? {
+                    rules.push(rule);
+                }
             }
         } else if fp.is_file() {
             if let Some(new_rules) = scan_ignore(fp.as_path()) {
