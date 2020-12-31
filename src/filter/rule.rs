@@ -248,7 +248,7 @@ impl fmt::Display for Rule {
             } else {
                 write!(
                     f,
-                    "[{},{}] {}",
+                    "[{}, {}] {}",
                     self.action,
                     self.path_type,
                     self.path.display()
@@ -257,7 +257,7 @@ impl fmt::Display for Rule {
         } else {
             write!(
                 f,
-                "[{},{},{},Priority={},{},CaseSensitive={}] {}",
+                "[{}, {}, {}, Priority={}, {}, CaseSensitive={}] {}",
                 self.action,
                 self.ts,
                 self.thr,
